@@ -13,8 +13,14 @@ module DataReader
     nil
   end
 
+  def data_source
+    return @data_source if @data_source
+    nil
+  end
+
   def load(file_list)
     files = file_list.include?(',') ? file_list.split(',') : [file_list]
+    files = files.collect(&:strip)
     @data_source = files.inject({}) do |data, file|
       data.merge!(YAML.load(
                     ERB.new(File.read("#{data_path}/#{file}")).result(binding)

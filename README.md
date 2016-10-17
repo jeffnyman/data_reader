@@ -1,5 +1,8 @@
 # DataReader
 
+[![Gem Version](https://badge.fury.io/rb/data_reader.svg)](http://badge.fury.io/rb/data_reader)
+[![License](http://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/jnyman/data_reader/blob/master/LICENSE.txt)
+
 The DataReader gem is used to provide a standard mechanism for providing a YAML data source and loading data from it. DataReader is mainly used as a support gem that can be included by other libraries that need this functionality.
 
 ## Installation
@@ -20,44 +23,107 @@ You can also install DataReader just as you would any other gem:
 
 ## Usage
 
-You can extend the DataReader to use it in another class or module.
+### Including DataReader
+
+You can include the DataReader in a class or module.
 
 ```ruby
-class DataBuilder
-  extend DataReader
+require "data_reader"
+
+class Testing
+  include DataReader
 end
 ```
 
-By extending the DataReader module you have three methods and two instance variables available to you. The three methods:
+DataReader does not set defaults for anything. It does hold a `data_path` that you set. It holds a `data_source` that is populated with the result of a file load.
 
-* `data_path=`
-* `data_path`
-* `load`
-
-The instance variables:
-
-* `@data_path`
-* `@data_source`
-
-The `@data_path` instance variable will contain a reference to the location where the YAML file (or files) can be found. The `@data_source` instance variable will contain the contents of the YAML file after a call to `load`.
-
-### Multiple Data Files
-
-The `load` method can be used in two ways.
-
-First, it can take the name of a file that is in the directory specified by the `@data_path` instance variable.
+With the above class in place, you could do this:
 
 ```ruby
-load 'my_data.yml'
+test = Testing.new
+
+test.data_path = 'data'
+
+puts test.data_path
+
+test.load 'default.yml'
+
+puts test.data_source
 ```
 
-Second, it can also take a list of comma separated names of files that are in that same directory.
+Here you are setting the `data_path` to a directory called `data`. The `puts` statement after that simply confirms that this was set. You then call the `load` method for a YAML file that is in that directory. The `puts` call for the `data_source` will show you the contents of the YAML.
+
+You could have specified the `data_path` as part of the class instead, like this:
 
 ```ruby
-load 'users.yml,accounts.yml,billing.yml'
+class Testing
+  include DataReader
+
+  def data_path
+    'data'
+  end
+end
 ```
 
-When loading in multiple files, the `@data_source` instance will hold the contents of all the files in the list.
+Then you don't have to set the path specifically.
+
+You can load multiple YAML files. The `load` method takes a list of comma separated names of files that are in that same directory.
+
+```ruby
+load 'users.yml, accounts.yml, billing.yml'
+```
+
+When loading in multiple files, the `data_source` will hold the contents of all the files in the list.
+
+### Extending DataReader
+
+You can also extend, rather than include, DataReader. This means you deal with the class rather than an instance of it. For example:
+
+```ruby
+require "data_reader"
+
+class Testing
+  extend DataReader
+end
+
+Testing.data_path = 'data'
+
+puts Testing.data_path
+
+Testing.load 'default.yml'
+
+puts Testing.data_source
+```
+
+Note that you can provide methods as you did in the include class, but make sure they are defined on `self`. For example:
+
+```ruby
+class Testing
+  extend DataReader
+
+  def self.data_path
+    'data'
+  end
+end
+```
+
+### Default Path
+
+You can, at any time, set a data path. When you do, any calls to `load` will use that data path. However, you may want to make sure that a default data path is always available should a data path not have been specifically set. You can do that as follows:
+
+```ruby
+class Testing
+  include DataReader
+
+  def default_data_path
+    'data'
+  end
+end
+```
+
+Remember to add a `self` to the method call if you are extending DataReader.
+
+Keep in mind that DataReader will always favor whatever it has stored in `data_path`. The `default_data_path` can be used for a fallback.
 
 ### Parameterizing Files
 
@@ -75,6 +141,8 @@ The support for ERB allows for custom calls. One that is included with DataReade
 <%= include_data("my_data.yml") %>
 ```
 
+If the above line was in a file called `default.yml` and you used the `load 'default.yml'` command, then, because of the call to `include_data` you would end up with the data from both files.
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec:all` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment. To install this gem onto your local machine, run `bundle exec rake install`.
@@ -83,7 +151,7 @@ After checking out the repo, run `bin/setup` to install dependencies. Then, run 
 
 Bug reports and pull requests are welcome on GitHub at [https://github.com/jnyman/data_reader](https://github.com/jnyman/data_reader). The testing ecosystem of Ruby is very large and this project is intended to be a welcoming arena for collaboration on yet another testing tool. As such, contributors are very much welcome but are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
 
-To contribute to Decohere:
+To contribute to DataReader:
 
 1. [Fork the project](http://gun.io/blog/how-to-github-fork-branch-and-pull-request/).
 2. Create your feature branch. (`git checkout -b my-new-feature`)
@@ -97,7 +165,7 @@ To contribute to Decohere:
 
 ## Credits
 
-This code is based upon the [YmlReader](https://github.com/cheezy/yml_reader) gem. I wanted to make a more generic version that may not be focused only on YAML files.
+This code is based upon the [YmlReader](https://github.com/cheezy/yml_reader) gem. I wanted to give myself room to make a more generic version that may not be focused only on YAML files. More importantly, I wanted to clean up the implementation and documentation a bit.
 
 ## License
 
