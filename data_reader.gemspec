@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = %q{Provides a standard method for reading YAML data files}
   spec.description   = %q{Provides a standard method for reading YAML data files}
-  spec.homepage      = "https://github.com/jnyman/data_reader"
+  spec.homepage      = "https://github.com/jeffnyman/data_reader"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|

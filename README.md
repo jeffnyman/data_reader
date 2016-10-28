@@ -1,7 +1,7 @@
 # DataReader
 
 [![Gem Version](https://badge.fury.io/rb/data_reader.svg)](http://badge.fury.io/rb/data_reader)
-[![License](http://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/jnyman/data_reader/blob/master/LICENSE.txt)
+[![License](http://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/jeffnyman/data_reader/blob/master/LICENSE.txt)
 
 The DataReader gem is used to provide a standard mechanism for providing a YAML data source and loading data from it. DataReader is mainly used as a support gem that can be included by other libraries that need this functionality.
 
@@ -149,7 +149,7 @@ After checking out the repo, run `bin/setup` to install dependencies. Then, run 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at [https://github.com/jnyman/data_reader](https://github.com/jnyman/data_reader). The testing ecosystem of Ruby is very large and this project is intended to be a welcoming arena for collaboration on yet another testing tool. As such, contributors are very much welcome but are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
+Bug reports and pull requests are welcome on GitHub at [https://github.com/jeffnyman/data_reader](https://github.com/jeffnyman/data_reader). The testing ecosystem of Ruby is very large and this project is intended to be a welcoming arena for collaboration on yet another testing tool. As such, contributors are very much welcome but are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
 
 To contribute to DataReader:
 
@@ -170,4 +170,4 @@ This code is based upon the [YmlReader](https://github.com/cheezy/yml_reader) ge
 ## License
 
 DataReader is distributed under the [MIT](http://www.opensource.org/licenses/MIT) license.
-See the [LICENSE](https://github.com/jnyman/data_reader/blob/master/LICENSE.txt) file for details.
+See the [LICENSE](https://github.com/jeffnyman/data_reader/blob/master/LICENSE.txt) file for details.
