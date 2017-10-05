@@ -22,7 +22,7 @@ module DataReader
     files = file_list.include?(',') ? file_list.split(',') : [file_list]
     files = files.collect(&:strip)
     @data_source = files.inject({}) do |data, file|
-      data.merge!(YAML.load(
+      data.merge!(YAML.safe_load(
                     ERB.new(File.read("#{data_path}/#{file}")).result(binding)
       ))
     end
