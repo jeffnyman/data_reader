@@ -1,4 +1,0 @@
----
-<%= include_data("included.yml") %>
-'from_example':
-  'test': 'xyzzy'

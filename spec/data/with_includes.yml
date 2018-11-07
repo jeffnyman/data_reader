@@ -1,0 +1,7 @@
+---
+<%= include_data("include1.yml") %>
+
+_include_:
+  - nested_include.yml
+section_1:
+  foo: 'bar'

@@ -55,7 +55,7 @@ Metrics/BlockNesting:
 
 # Encourage short methods.
 Metrics/MethodLength:
-  Max: 10
+  Max: 12
 
 # Encourage fewer parameters.
 Metrics/ParameterLists:
