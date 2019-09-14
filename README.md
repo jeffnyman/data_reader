@@ -1,7 +1,7 @@
 # DataReader
 
 [![Gem Version](https://badge.fury.io/rb/data_reader.svg)](http://badge.fury.io/rb/data_reader)
-[![License](http://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/jeffnyman/data_reader/blob/master/LICENSE.txt)
+[![License](http://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/jeffnyman/data_reader/blob/master/LICENSE.md)
 
 The DataReader gem is used to provide a standard mechanism for providing a YAML data source and loading data from it. DataReader is mainly used as a support gem that can be included by other libraries that need this functionality.
 
@@ -13,13 +13,23 @@ To get the latest stable release, add this line to your application's Gemfile:
 gem 'data_reader'
 ```
 
-And then include it in your bundle:
+To get the latest code:
 
-    $ bundle
+```ruby
+gem 'data_reader', git: 'https://github.com/jeffnyman/data_reader'
+```
+
+After doing one of the above, execute the following command:
+
+```
+$ bundle
+```
 
 You can also install DataReader just as you would any other gem:
 
-    $ gem install data_reader
+```
+$ gem install data_reader
+```
 
 ## Usage
 
@@ -53,11 +63,11 @@ project_dir\
 
   env\
     environments.yml
-	
+
   example-data-reader.rb
 ```
 
-All the code shown below would go in the `example-data-reader` file.
+All the code shown below would go in the `example-data-reader.rb` file.
 
 With the above class in place and the above directory structure, you could do this:
 
@@ -271,7 +281,11 @@ If you were using `default_data_path`, likewise just make sure you prepend `self
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec:all` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment. To install this gem onto your local machine, run `bundle exec rake install`.
+After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec:all` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+
+The default `rake` command will run all tests as well as a RuboCop analysis.
+
+To install this gem onto your local machine, run `bundle exec rake install`.
 
 ## Contributing
 
@@ -296,4 +310,4 @@ This code is based upon the [YmlReader](https://github.com/cheezy/yml_reader) ge
 ## License
 
 DataReader is distributed under the [MIT](http://www.opensource.org/licenses/MIT) license.
-See the [LICENSE](https://github.com/jeffnyman/data_reader/blob/master/LICENSE.txt) file for details.
+See the [LICENSE](https://github.com/jeffnyman/data_reader/blob/master/LICENSE.md) file for details.
