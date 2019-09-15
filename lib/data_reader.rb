@@ -10,7 +10,11 @@ module DataReader
 
   def data_path
     return @data_path if @data_path
-    return default_data_path if respond_to? :default_data_path
+
+    if respond_to? :default_data_path
+      @data_path = default_data_path
+      return default_data_path
+    end
 
     nil
   end
