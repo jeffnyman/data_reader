@@ -64,26 +64,62 @@ project_dir\
   env\
     environments.yml
 
-  example-data-reader.rb
+  test-data-reader.rb
 ```
 
-All the code shown below would go in the `example-data-reader.rb` file.
+All the code shown below would go in the `test-data-reader.rb` file.
 
 With the above class in place and the above directory structure, you could do this:
 
 ```ruby
 test = Testing.new
 
-test.data_path = 'data'
-
 puts test.data_path
-
-test.load 'stars.yml'
-
 puts test.data_source
 ```
 
-Here you are setting the `data_path` to a directory called `data`. The `puts` statement after that simply confirms that this was set. You then call the `load` method for a YAML file that is in that directory. The `puts` call for the `data_source` will show you the contents of the YAML.
+This would print nothing for either of those values, showing that they have no default values as just stated. You could now do this:
+
+```ruby
+test.data_path = 'data'
+
+puts test.data_path
+```
+
+Here you are setting the `data_path` to a directory called `data`. The `puts` statement after that simply confirms that this was set. That will now set the data path for DataReader. Here the "data path" indicates where DataReader will look for data files. Thus you could load any file that is in that directory:
+
+```ruby
+test.load 'stars.yml'
+```
+
+Loading causes the data from the file to be put into the data source. This can be referenced directly by the `data_source` attribute.
+
+
+```ruby
+puts test.data_source
+```
+
+The `puts` call for the `data_source` will show you the contents of the YAML.
+
+You could set the data source on the class instance if you wanted to:
+
+```ruby
+class Testing
+  include DataReader
+
+  def data
+    @data_source
+  end
+end
+```
+
+Now you can access the data via:
+
+```ruby
+puts test.data
+```
+
+The reason this might be useful is because the data source may change but this way you refer to it via one variable.
 
 ### Data Path on Class
 
@@ -99,42 +135,33 @@ class Testing
 end
 ```
 
-Then you don't have to set the path specifically on the instance.
-
-### Multiple Data Files
-
-You can load multiple YAML files. The `load` method takes a list of comma separated names of files that are in that same directory. So if you were to place all the above example YAML files in one directory, you could do this:
+Then you don't have to set the path specifically on the instance. That being said, you generally don't want to have both in place. Meaning either have the `data_path` defined on the test class or on the instance, not both. To show why this is problematic, consider this:
 
 ```ruby
-load 'config.yml, environments.yml, stars.yml'
+class Testing
+  include DataReader
+
+  def data_path
+    'data'
+  end
+end
+
+test = Testing.new
+
+test.data_path = 'combined'
+
+test.load 'stars.yml'
 ```
 
-When loading in multiple files, the `data_source` will hold the contents of all the files in the list.
-
-### Multiple Data Sources
-
-You don't have to use the `data_source` value. For example, you could do this:
+Here I'm setting the `data_path` twice. This works because the data file `stars.yml` is in the `data`. But now try this:
 
 ```ruby
-configs = app.load 'config.yml'
-envs = app.load 'environments.yml'
+test.load 'config.yml'
 ```
 
-In this case, the appropriate data would be stored in each variable. Do note that `data_source` will always contain the last data read by the `load` method. So in the above case, `data_source` would contain the contents of `environments.yml` even if you never intended to use that variable.
+That will fail. And that's because even though `config.yml` is in the `combined` directory, it's not in `data`. And that's what's being used here.
 
-### Setting a Data Pata
-
-You can, at any time, set a data path. When you do, any calls to `load` will use that data path. Consider this example:
-
-```ruby
-app.data_path = 'config'
-configs = app.load 'config.yml'
-
-app.data_path = 'env'
-envs = app.load 'environments.yml'
-```
-
-Do note that if you had defined a `data_path` method in your class, as shown above, that will always overridde a local instance setting as shown in the preceding code.
+The upshot is that if you define a `data_path` on the class, that's what will be used.
 
 ### Default Data Path
 
@@ -175,13 +202,82 @@ test.data_path = 'config'
 configs = test.load 'config.yml'
 puts test.data_source
 
-app.data_path = nil
+test.data_path = nil
 
-app.load 'stars.yml'
-puts app.data_source
+test.load 'stars.yml'
+puts test.data_source
 ```
 
 The second call to load the `stars.yml` file reverts to using the default data path.
+
+Just to show how this can fail, consider the following:
+
+```ruby
+class Testing
+  include DataReader
+
+  def default_data_path
+    'data'
+  end
+end
+
+test = Testing.new
+
+test.data_path = 'config'
+
+test.load 'stars.yml'
+```
+
+This would fail to load `stars.yml`. While `stars.yml` is in `data`, which is the default, you have set a specific data path here to `config`.
+
+The upshot is that a specific data path overrides the default.
+
+Note that named sections will currently cause a failure. So for example:
+
+```yaml
+users: &users
+  admin:
+  - username: admin
+  	password: admin
+```
+
+This would fail to load based on the `&users` part.
+
+### Multiple Data Files
+
+You can load multiple YAML files. The `load` method takes a list of comma separated names of files that are in that same directory. So if you were to place all the above example YAML files in one directory, you could do this:
+
+```ruby
+load 'config.yml, environments.yml, stars.yml'
+```
+
+When loading in multiple files, the `data_source` will hold the contents of all the files in the list.
+
+### Multiple Data Sources
+
+You don't have to use the `data_source` value. For example, you could do this:
+
+```ruby
+configs = app.load 'config.yml'
+envs = app.load 'environments.yml'
+```
+
+In this case, the appropriate data would be stored in each variable. Do note that `data_source` will always contain the last data read by the `load` method. So in the above case, `data_source` would contain the contents of `environments.yml` even if you never intended to use that variable.
+
+### Setting a Data Pata
+
+You can, at any time, set a data path. When you do, any calls to `load` will use that data path. Consider this example:
+
+```ruby
+app.data_path = 'config'
+configs = app.load 'config.yml'
+
+app.data_path = 'env'
+envs = app.load 'environments.yml'
+```
+
+Do note that if you had defined a `data_path` method in your class, as shown above, that will always overridde a local instance setting as shown in the preceding code.
+
 
 ### Parameterizing Data
 
