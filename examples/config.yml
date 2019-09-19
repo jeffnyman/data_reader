@@ -1,0 +1,5 @@
+config:
+  current:
+    server: test
+    user: jeff_nyman
+    browser: <%= ENV['BROWSER'] %>

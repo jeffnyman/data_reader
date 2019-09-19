@@ -1,21 +1,26 @@
 require "data_reader/version"
+
 require "pathname"
 require "yaml"
 require "erb"
 
 module DataReader
+  # Sets the path to use when reading data files.
   def data_path=(path)
     @data_path = path
   end
 
+  # Returns the path that will be used to read data files.
   def data_path
     return @data_path if @data_path
-    return default_data_path if self.respond_to? :default_data_path
+    return default_data_path if respond_to? :default_data_path
+
     nil
   end
 
-  def data_source
-    return @data_source if @data_source
+  # Returns the contents that have been read in from a loaded file data file.
+  def data_contents
+    return @data_contents if @data_contents
 
     nil
   end
@@ -24,7 +29,7 @@ module DataReader
     files = file_list.include?(',') ? file_list.split(',') : [file_list]
     files = files.collect(&:strip)
 
-    @data_source = files.inject({}) do |all_data, file|
+    @data_contents = files.inject({}) do |all_data, file|
       data = include_key(::YAML.safe_load(include_data(file)))
       all_data.merge!(data) if data
     end

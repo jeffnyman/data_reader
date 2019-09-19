@@ -3,7 +3,7 @@
 [![Gem Version](https://badge.fury.io/rb/data_reader.svg)](http://badge.fury.io/rb/data_reader)
 [![License](http://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/jeffnyman/data_reader/blob/master/LICENSE.md)
 
-The DataReader gem is used to provide a standard mechanism for providing a YAML data source and loading data from it. DataReader is mainly used as a support gem that can be included by other libraries that need this functionality.
+The DataReader gem is used to provide a standard mechanism for providing a YAML data path and loading data from it. DataReader is mainly used as a support gem that can be included by other libraries that need this functionality.
 
 ## Installation
 
@@ -33,6 +33,8 @@ $ gem install data_reader
 
 ## Usage
 
+The basic idea of DataReader is simple: you set a data path and DataReader will load data files from that path. But there are some nuances that it's worth discussing in this documentation.
+
 ### Including DataReader
 
 You can include the DataReader in a class or module.
@@ -47,7 +49,7 @@ end
 
 This will provide DataReader functionality on any instance of the class where DataReader is mixed in.
 
-DataReader does not set defaults for anything. It provides a `data_path` variable that you can set. It also provides a `data_source` variable that will be populated with the result of a file that gets loaded from any specified data path.
+DataReader does not set defaults for anything. It provides a `data_path` variable that you can set. It also provides a `data_contents` variable that will be populated with the result of a data file that gets loaded from any specified data path.
 
 ### Data Paths
 
@@ -55,60 +57,63 @@ Consider the following file and directory setup:
 
 ```
 project_dir\
-  config\
-    config.yml
-
-  data\
+  combined\
+    invalid.yml
+    conditions.yml
     stars.yml
 
-  env\
-    environments.yml
+  provision\
+    invalid.yml
 
-  test-data-reader.rb
+  stardates\
+    conditions.yml
+
+  warp\
+    stars.yml
 ```
 
-All the code shown below would go in the `test-data-reader.rb` file.
+This is in fact the structure that is provided as part of the `examples` directory with this repository.
 
-With the above class in place and the above directory structure, you could do this:
+Within the `project_dir` you could create a file called `script.rb` to see how DataReader works. Put the above class in place in that file and then add this:
 
 ```ruby
 test = Testing.new
 
 puts test.data_path
-puts test.data_source
+puts test.data_contents
 ```
 
-This would print nothing for either of those values, showing that they have no default values as just stated. You could now do this:
+This would print nothing for either of those values, showing that they have no default values. You could now do this:
 
 ```ruby
-test.data_path = 'data'
+test.data_path = 'warp'
 
 puts test.data_path
 ```
 
-Here you are setting the `data_path` to a directory called `data`. The `puts` statement after that simply confirms that this was set. That will now set the data path for DataReader. Here the "data path" indicates where DataReader will look for data files. Thus you could load any file that is in that directory:
+Here you are setting the `data_path` to a directory called `warp`. The `puts` statement after that simply confirms that this was set. This has now set the data path for DataReader. Here the "data path" indicates where DataReader will look for data files. Thus you could load any file that is in that directory:
 
 ```ruby
 test.load 'stars.yml'
 ```
 
-Loading causes the data from the file to be put into the data source. This can be referenced directly by the `data_source` attribute.
+Loading causes the data from the file to be put into a `data_contents` attribute.
 
 
 ```ruby
-puts test.data_source
+puts test.data_contents
 ```
 
-The `puts` call for the `data_source` will show you the contents of the YAML.
+The `puts` call for the `data_contents` will show you the contents of the `stars.yml` file.
 
-You could set the data source on the class instance if you wanted to:
+You could set the data contents on the class instance if you wanted to:
 
 ```ruby
 class Testing
   include DataReader
 
   def data
-    @data_source
+    @data_contents
   end
 end
 ```
@@ -119,49 +124,42 @@ Now you can access the data via:
 puts test.data
 ```
 
-The reason this might be useful is because the data source may change but this way you refer to it via one variable.
+The reason this might be useful is because the data contents may change, such as if you read different files at different times, but this way you refer to the relevant contents via one variable.
+
+Note that you can change the data path on the fly if you need to. For example:
+
+```ruby
+test.data_path = 'stardates'
+
+test.load 'conditions.yml'
+```
+
+This would set the data path to the `stardates` directory and then the load file would grab the contents of the `conditions.yml` file.
 
 ### Data Path on Class
 
-You could have specified the `data_path` as a method of the class instead, like this:
+You could have specified the `data_path` as a method on the class instead, like this:
 
 ```ruby
 class Testing
   include DataReader
 
   def data_path
-    'data'
+    'provision'
   end
 end
 ```
 
-Then you don't have to set the path specifically on the instance. That being said, you generally don't want to have both in place. Meaning either have the `data_path` defined on the test class or on the instance, not both. To show why this is problematic, consider this:
+Then you don't have to set the path specifically as we've been doing.
+
+Note that if you are setting the `data_path` on the class, the idea is that you want this to be the data path. So it can't be reassigned. To see that, try the above and the have the script logic as such:
 
 ```ruby
-class Testing
-  include DataReader
-
-  def data_path
-    'data'
-  end
-end
-
-test = Testing.new
-
-test.data_path = 'combined'
-
-test.load 'stars.yml'
+test.data_path = 'provision'
+test.load 'invalid.yml'
 ```
 
-Here I'm setting the `data_path` twice. This works because the data file `stars.yml` is in the `data`. But now try this:
-
-```ruby
-test.load 'config.yml'
-```
-
-That will fail. And that's because even though `config.yml` is in the `combined` directory, it's not in `data`. And that's what's being used here.
-
-The upshot is that if you define a `data_path` on the class, that's what will be used.
+This would lead to an error because while you have set the `data_path`, that will not override what has been set on the class. So the upshot is that if you define a `data_path` as a method on the class, that's what will be used even if you re-define the `data_path` on a specific instance of that class.
 
 ### Default Data Path
 
@@ -172,7 +170,7 @@ class Testing
   include DataReader
 
   def default_data_path
-    'data'
+    'provision'
   end
 end
 ```
@@ -182,57 +180,22 @@ Keep in mind that DataReader will always favor whatever it has stored in `data_p
 ```ruby
 test = Testing.new
 
-test.load 'stars.yml'
-puts test.data_source
-
-test.data_path = 'config'
-configs = test.load 'config.yml'
-puts test.data_source
+test.load 'invalid.yml'
+puts test.data_contents
 ```
 
-Here the first `load` call works by using the default path. Then a data path is set and a file loaded from that path. Once that data path has been set, the default data path is no longer going to be used. If you want to be able to revert to the default, you need to set the `data_path` to nil. For example, here's the same code as the preceding with a few additions at the end:
+This owuld work just fine. But if you were to set the data path, that overrides the default:
 
 ```ruby
-test = Testing.new
-
-test.load 'stars.yml'
-puts test.data_source
-
-test.data_path = 'config'
-configs = test.load 'config.yml'
-puts test.data_source
-
-test.data_path = nil
-
-test.load 'stars.yml'
-puts test.data_source
+test.data_path = 'warp'
+test.load 'invalid.yml'
 ```
 
-The second call to load the `stars.yml` file reverts to using the default data path.
+Here I've set the `data_path` but I'm still trying to load `invalid.yml` (which is in the `provision` directory). But the `data_path`, since it's set, overrides that. The upshot is that a specific data path overrides the default.
 
-Just to show how this can fail, consider the following:
+If you want to be able to revert to the default, you need to set the `data_path` to nil.
 
-```ruby
-class Testing
-  include DataReader
-
-  def default_data_path
-    'data'
-  end
-end
-
-test = Testing.new
-
-test.data_path = 'config'
-
-test.load 'stars.yml'
-```
-
-This would fail to load `stars.yml`. While `stars.yml` is in `data`, which is the default, you have set a specific data path here to `config`.
-
-The upshot is that a specific data path overrides the default.
-
-Note that named sections will currently cause a failure. So for example:
+### Note that named sections will currently cause a failure. So for example:
 
 ```yaml
 users: &users
@@ -245,39 +208,26 @@ This would fail to load based on the `&users` part.
 
 ### Multiple Data Files
 
-You can load multiple YAML files. The `load` method takes a list of comma separated names of files that are in that same directory. So if you were to place all the above example YAML files in one directory, you could do this:
+You can load multiple YAML files. The `load` method takes a list of comma separated names of files that are in that same directory. So if you were to place all the above example YAML files in one directory, such as the `combined` directory shown above, you could do this:
 
 ```ruby
-load 'config.yml, environments.yml, stars.yml'
+test.data_path = 'combined'
+
+test.load 'stars.yml, conditions.yml, invalid.yml'
 ```
 
-When loading in multiple files, the `data_source` will hold the contents of all the files in the list.
+When loading in multiple files, the `data_contents` will hold the contents of all the files in the list.
 
 ### Multiple Data Sources
 
-You don't have to use the `data_source` value. For example, you could do this:
+You don't have to use the `data_context` value. For example, you could do this:
 
 ```ruby
-configs = app.load 'config.yml'
-envs = app.load 'environments.yml'
+stars = test.load 'stars.yml'
+invalid = test.load 'invalid.yml'
 ```
 
-In this case, the appropriate data would be stored in each variable. Do note that `data_source` will always contain the last data read by the `load` method. So in the above case, `data_source` would contain the contents of `environments.yml` even if you never intended to use that variable.
-
-### Setting a Data Pata
-
-You can, at any time, set a data path. When you do, any calls to `load` will use that data path. Consider this example:
-
-```ruby
-app.data_path = 'config'
-configs = app.load 'config.yml'
-
-app.data_path = 'env'
-envs = app.load 'environments.yml'
-```
-
-Do note that if you had defined a `data_path` method in your class, as shown above, that will always overridde a local instance setting as shown in the preceding code.
-
+In this case, the appropriate data would be stored in each variable. Do note that `data_context` will always contain the last data read by the `load` method. So in the above case, `data_context` would contain the contents of `invalid.yml` even if you never intended to use that variable.
 
 ### Parameterizing Data
 
@@ -300,11 +250,11 @@ config:
 Now let's say I loaded up this file and looked at the data source:
 
 ```ruby
-app.load 'config.yml'
-puts app.data_source
+test.load 'config.yml'
+puts test.data_contents
 ```
 
-Assuming the BROWSER environment variable was set, the `data_source` variable would look as follows:
+Assuming the BROWSER environment variable was set, the `data_contents` variable would look as follows:
 
 ```
 {
@@ -320,26 +270,39 @@ Assuming the BROWSER environment variable was set, the `data_source` variable wo
 
 ### Method Calls on Data
 
-The support for ERB allows for custom method calls. One that is included with DataReader is `include_data`, which can be used like this:
+The support for ERB allows for custom method calls. One that is included with DataReader is `include_data`. First consider the directory structure:
 
-```yaml
-<%= include_data("config.yml") %>
+```
+included\
+  included_nested.yml
+  included.yml
+  with_includes.yml
+  with_nested_includes.yml
 ```
 
-Say that this line was included in line was in the YAML `environment.yml` from the above structure and you did this:
+In the `with_includes.yml` file, there is a line like this:
+
+```yaml
+<%= include_data("included.yml") %>
+```
+
+Now you can do this:
 
 ```ruby
-app.data_path = 'env'
-app.load 'environments.yml'
+test.data_path = 'included'
+
+test.load 'with_includes.yml'
 ```
 
-This will load up `environments.yml` and, because of the `include_data` call would attempt to load the file `config.yml`. Note, however, that DataReader will attempt to load this from the same location as `environments.yml`. You can absolute or relative paths as part of the call, as such:
+This will load up `with_includes.yml` and, because of the `include_data` call would attempt to load the file `included.yml`.
+
+In this case, the value of `data_contents` would contain both data sets, first the data from `with_includes.yml` and then the data from `included.yml`.
+
+Note, however, that DataReader will attempt to load this from the same location as `with_includes.yml`. You can absolute or relative paths as part of the call, as such:
 
 ```yaml
-<%= include_data("../config/config.yml") %>
+<%= include_data("../warp/stars.yml") %>
 ````
-
-In this case, the value of `data_source` would contain both data sets, first the data from `config.yml` and then the data from `environments.yml`.
 
 ### Extending DataReader
 

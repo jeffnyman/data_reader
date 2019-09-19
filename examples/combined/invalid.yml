@@ -1,0 +1,8 @@
+invalid:
+  provision:
+    activation-code:
+      - The activation code must be four numeric characters.
+    deactivation-code:
+      - The deactivation code must be four numeric characters.
+    countdown-value:
+      - The countdown value must be a whole number.

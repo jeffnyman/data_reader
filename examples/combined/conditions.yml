@@ -1,0 +1,6 @@
+stardate:
+  invalid:
+    conditions:
+      - only letters
+      - some letters
+      - less than four numbers

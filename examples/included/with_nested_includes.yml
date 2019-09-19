@@ -1,0 +1,10 @@
+<%= include_data("included.yml") %>
+
+_include_:
+  - included_nested.yml
+
+xyzzy:
+  adventure: "woods"
+
+  nested_key:
+    _include_: "../warp/stars.yml"
